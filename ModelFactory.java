@@ -1,5 +1,3 @@
-package jdbi;
-
 public abstract class ModelFactory<T extends Model> {
     
     /**
