@@ -54,7 +54,7 @@ public abstract class FileStorageEngine<T extends Model> extends StorageEngine<T
     /// @return A list of non-blank serialized lines, or `null` if file is missing or error occurs.
     protected List<String> readAllSerializedLines() {
 
-        if (!Files.exists(path)) return null;
+        if (!Files.exists(path)) return new ArrayList<>();
         try {
 
             var lines = Files.readAllLines(path, StandardCharsets.UTF_8);
@@ -64,7 +64,7 @@ public abstract class FileStorageEngine<T extends Model> extends StorageEngine<T
         } catch (IOException e) {
 
             logger.log(Level.SEVERE, "Failed to read storage file: " + path, e);
-            return null;
+            return new ArrayList<>();
         }
     }
 
@@ -72,12 +72,12 @@ public abstract class FileStorageEngine<T extends Model> extends StorageEngine<T
     /// @return The full file content as a trimmed string, or `null` if file is missing or error occurs.
     protected String readFullFileContent() {
 
-        if (!Files.exists(path)) return null;
+        if (!Files.exists(path)) return "";
         try { return Files.readString(path, StandardCharsets.UTF_8).trim(); }
         catch (IOException e) {
 
             logger.log(Level.SEVERE, "Failed to read full storage file content: " + path, e);
-            return null;
+            return "";
         }
     }
 

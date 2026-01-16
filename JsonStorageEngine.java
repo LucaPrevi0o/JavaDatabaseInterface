@@ -30,14 +30,14 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
     public synchronized List<T> read() {
 
         var content = readFullFileContent();
-        if (content.isEmpty()) return null;
+        if (content.isEmpty()) return new ArrayList<>();
 
         var start = content.indexOf('[');
         var end = content.lastIndexOf(']');
-        if (start == -1 || end == -1 || end <= start) return null;
+        if (start == -1 || end == -1 || end <= start) return new ArrayList<>();
 
         var inner = content.substring(start + 1, end).trim();
-        if (inner.isEmpty()) return null;
+        if (inner.isEmpty()) return new ArrayList<>();
 
         var out = new ArrayList<T>();
         var brace = 0;
