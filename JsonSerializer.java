@@ -3,12 +3,23 @@ package jdbi;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public interface JsonSerializer<T> extends Serializer<T>{
+/// A serializer that converts models to and from JSON format.
+///
+/// This interface provides a default implementation for serializing models to JSON strings,
+/// using reflection to access the model's fields.
+/// It handles basic data types and performs simple escaping for JSON strings.
+///
+/// <hr>
+///
+/// The JsonSerializer is designed to work with any model implementing the Model interface.
+/// This allows for flexibility in handling different types of data models,
+/// in order for the storage engines to utilize JSON serialization logic.
+public interface JsonSerializer extends Serializer {
 
     Logger logger = Logger.getLogger(JsonSerializer.class.getName());
 
     @Override
-    default String serialize(T model) {
+    default <T extends Model> String serialize(T model) {
 
         var fields = model.getClass().getDeclaredFields();
         var jsonBuilder = new StringBuilder();
@@ -22,27 +33,27 @@ public interface JsonSerializer<T> extends Serializer<T>{
                 var value = fields[i].get(model);
                 jsonBuilder.append("\"").append(name).append("\":");
 
-                if (value == null) {
-                    jsonBuilder.append("null");
-                } else if (value instanceof String || value instanceof Character) {
+                if (value == null) jsonBuilder.append("null");
+                else if (value instanceof String || value instanceof Character) {
+
                     var s = String.valueOf(value);
                     jsonBuilder.append("\"").append(escapeJsonString(s)).append("\"");
-                } else if (value instanceof Number || value instanceof Boolean) {
-                    jsonBuilder.append(value.toString());
-                } else {
-                    // Fallback: call toString() and quote it (best-effort for complex types)
-                    jsonBuilder.append("\"").append(escapeJsonString(value.toString())).append("\"");
-                }
+                } else if (value instanceof Number || value instanceof Boolean) jsonBuilder.append(value);
+                else jsonBuilder.append("\"").append(escapeJsonString(value.toString())).append("\"");
                 if (i < fields.length - 1) jsonBuilder.append(",");
             } catch (IllegalAccessException e) { logger.log(Level.SEVERE, "Failed to access field for JSON serialization: " + fields[i].getName(), e); }
         }
+
         jsonBuilder.append("}");
         return jsonBuilder.toString();
     }
 
+    /// Escape special characters in a JSON string.
+    /// @param s The input string to escape.
+    /// @return The escaped JSON string.
     static String escapeJsonString(String s) {
+
         if (s == null || s.isEmpty()) return s == null ? "" : s;
-        // simple escaping for common JSON control characters
         return s.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")

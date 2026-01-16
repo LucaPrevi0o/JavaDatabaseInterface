@@ -7,7 +7,9 @@ public class MemoryStorageEngine<T> extends StorageEngine<T> {
 
     List<T> storage = new ArrayList<>();
 
-    public MemoryStorageEngine(Serializer<T> serializer) { super(serializer); }
+    /// Constructs a MemoryStorageEngine with the specified serializer.
+    /// @param serializer The serializer used for serializing and deserializing models.
+    public MemoryStorageEngine(Serializer serializer) { super(serializer); }
 
     @Override
     public void create(T model) { storage.add(model); }

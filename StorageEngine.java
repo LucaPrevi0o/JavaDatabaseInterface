@@ -12,15 +12,15 @@ import java.util.function.Predicate;
 /// @param <T> The type of model managed by the storage engine.
 public abstract class StorageEngine<T> {
 
-    protected final Serializer<T> serializer;
+    protected final Serializer serializer;
 
     /// Constructs a StorageEngine with the specified serializer.
     /// @param serializer The serializer to use for model serialization and deserialization.
-    public StorageEngine(Serializer<T> serializer) { this.serializer = serializer; }
+    public StorageEngine(Serializer serializer) { this.serializer = serializer; }
 
     /// Get the serializer used by this storage engine.
     /// @return The serializer instance.
-    public Serializer<T> getSerializer() { return serializer; }
+    public Serializer getSerializer() { return serializer; }
 
     /// Create a single model in the storage.
     /// @param model The model to create in the storage.
