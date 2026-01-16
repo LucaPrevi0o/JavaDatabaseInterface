@@ -28,9 +28,7 @@ public abstract class StorageEngine<T> {
 
     /// Create multiple models in the storage.
     /// @param models A list of models to create in the storage.
-    public void create(List<T> models) {
-        for (var model : models) create(model);
-    }
+    public void create(List<T> models) { for (var model : models) create(model); }
 
     /// Read all models from the storage.
     /// @return A collection of all models read from the storage.
@@ -47,22 +45,25 @@ public abstract class StorageEngine<T> {
         return results;
     }
 
+    /// Update a model in the storage.
+    /// @param model The existing model to be updated.
+    /// @param updatedModel The updated model data.
+    public abstract void update(T model, T updatedModel);
+
     /// Update models in the storage that match the given predicate.
     /// @param matcher A predicate to match models to be updated.
     /// @param updater A function to update the matched models.
     public void update(Predicate<T> matcher, Function<T, T> updater) {
 
-        var result = new ArrayList<T>();
-        for (var t : read()) result.add(matcher.test(t) ? updater.apply(t) : t);
-        create(result);
+        for (var t : read()) if (matcher.test(t))
+            update(t, updater.apply(t));
     }
+
+    /// Delete a model from the storage.
+    /// @param model The model to be deleted.
+    public abstract void delete(T model);
 
     /// Delete models from the storage that match the given predicate.
     /// @param matcher A predicate to match models to be deleted.
-    public void delete(Predicate<T> matcher) {
-
-        var remaining = new ArrayList<T>();
-        for (var t : read()) if (!matcher.test(t)) remaining.add(t);
-        create(remaining);
-    }
+    public void delete(Predicate<T> matcher) { for (var t : read()) if (matcher.test(t)) delete(t); }
 }
