@@ -1,5 +1,6 @@
 package jdbi;
 
+import java.lang.reflect.Array;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,10 +67,10 @@ public interface JsonSerializer extends Serializer {
         else if (value.getClass().isArray()) {
 
             jsonBuilder.append("[");
-            var length = java.lang.reflect.Array.getLength(value);
+            var length = Array.getLength(value);
             for (int j = 0; j < length; j++) {
 
-                var element = java.lang.reflect.Array.get(value, j);
+                var element = Array.get(value, j);
                 appendField(jsonBuilder, element);
                 if (j < length - 1) jsonBuilder.append(",");
             }
