@@ -31,21 +31,52 @@ public interface JsonSerializer extends Serializer {
 
                 var name = fields[i].getName();
                 var value = fields[i].get(model);
-                jsonBuilder.append("\"").append(name).append("\":");
-
-                if (value == null) jsonBuilder.append("null");
-                else if (value instanceof String || value instanceof Character) {
-
-                    var s = String.valueOf(value);
-                    jsonBuilder.append("\"").append(escapeJsonString(s)).append("\"");
-                } else if (value instanceof Number || value instanceof Boolean) jsonBuilder.append(value);
-                else jsonBuilder.append("\"").append(escapeJsonString(value.toString())).append("\"");
+                appendField(jsonBuilder, name, value);
                 if (i < fields.length - 1) jsonBuilder.append(",");
-            } catch (IllegalAccessException e) { logger.log(Level.SEVERE, "Failed to access field for JSON serialization: " + fields[i].getName(), e); }
+            } catch (IllegalAccessException e) {
+                logger.log(Level.SEVERE, "Failed to access field for JSON serialization: " + fields[i].getName(), e);
+            }
         }
 
         jsonBuilder.append("}");
         return jsonBuilder.toString();
+    }
+
+    /// Append a named field to the JSON string builder.
+    /// @param jsonBuilder The StringBuilder to append to.
+    /// @param name The name of the field.
+    /// @param value The value of the field.
+    default void appendField(StringBuilder jsonBuilder, String name, Object value) {
+
+        jsonBuilder.append("\"").append(name).append("\":");
+        appendField(jsonBuilder, value);
+    }
+
+    /// Append a value to the JSON string builder.
+    /// @param jsonBuilder The StringBuilder to append to.
+    /// @param value The value to append.
+    default void appendField(StringBuilder jsonBuilder, Object value) {
+
+        if (value == null) jsonBuilder.append("null");
+        else if (value instanceof String || value instanceof Character) {
+
+            var s = String.valueOf(value);
+            jsonBuilder.append("\"").append(escapeJsonString(s)).append("\"");
+        } else if (value instanceof Number || value instanceof Boolean) jsonBuilder.append(value);
+        else if (value.getClass().isArray()) {
+
+            jsonBuilder.append("[");
+            var length = java.lang.reflect.Array.getLength(value);
+            for (int j = 0; j < length; j++) {
+
+                var element = java.lang.reflect.Array.get(value, j);
+                appendField(jsonBuilder, element);
+                if (j < length - 1) jsonBuilder.append(",");
+            }
+            jsonBuilder.append("]");
+        }
+        else if (value instanceof Model m) jsonBuilder.append(serialize(m));
+        else jsonBuilder.append("\"").append(escapeJsonString(value.toString())).append("\"");
     }
 
     /// Escape special characters in a JSON string.
