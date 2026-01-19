@@ -1,4 +1,4 @@
-package jdbi;
+package com.lucaprevioo.jdbi;
 
 /// Serializer interface for serializing and deserializing models.
 ///

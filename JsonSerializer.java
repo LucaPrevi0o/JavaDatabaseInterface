@@ -1,4 +1,4 @@
-package jdbi;
+package com.lucaprevioo.jdbi;
 
 import java.lang.reflect.Array;
 import java.util.logging.Level;

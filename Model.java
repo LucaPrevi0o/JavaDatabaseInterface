@@ -1,4 +1,4 @@
-package jdbi;
+package com.lucaprevioo.jdbi;
 
 /// Marker interface for data models.
 ///

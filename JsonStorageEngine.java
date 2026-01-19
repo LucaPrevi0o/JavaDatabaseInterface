@@ -1,4 +1,4 @@
-package jdbi;
+package com.lucaprevioo.jdbi;
 
 import java.util.ArrayList;
 import java.util.List;

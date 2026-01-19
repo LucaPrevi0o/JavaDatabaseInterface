@@ -1,4 +1,4 @@
-package jdbi;
+package com.lucaprevioo.jdbi;
 
 import java.util.HashMap;
 import java.util.Map;

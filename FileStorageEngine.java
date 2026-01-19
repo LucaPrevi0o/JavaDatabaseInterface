@@ -1,4 +1,4 @@
-package jdbi;
+package com.lucaprevioo.jdbi;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
