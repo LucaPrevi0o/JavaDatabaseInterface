@@ -8,8 +8,8 @@ import java.util.logging.Level;
 ///
 /// This engine reads and writes the entire collection of models as a single JSON array.
 /// Each model is serialized/deserialized using the provided JsonSerializer.
-//// <T> The type of model being stored, which must implement the Model interface.
-public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
+/// @param <M> The type of model being stored, which must implement the Model interface.
+public class JsonStorageEngine<M extends Model> extends FileStorageEngine<M> {
 
     /// Constructs a JsonStorageEngine with the specified file path and JSON serializer.
     /// @param path The file path where models will be stored.
@@ -19,7 +19,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
     }
 
     @Override
-    public synchronized void create(T model) {
+    public synchronized void create(M model) {
 
         var models = read();
         models.add(model);
@@ -27,7 +27,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
     }
 
     @Override
-    public synchronized List<T> read() {
+    public synchronized List<M> read() {
 
         var content = readFullFileContent();
         if (content.isEmpty()) return new ArrayList<>();
@@ -39,7 +39,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
         var inner = content.substring(start + 1, end).trim();
         if (inner.isEmpty()) return new ArrayList<>();
 
-        var out = new ArrayList<T>();
+        var out = new ArrayList<M>();
         var brace = 0;
         var sb = new StringBuilder();
         for (var i = 0; i < inner.length(); i++) {
@@ -62,7 +62,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
     }
 
     @Override
-    public synchronized void update(T model, T updatedModel) {
+    public synchronized void update(M model, M updatedModel) {
 
         var models = read();
         if (models.isEmpty()) return;
@@ -73,7 +73,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
     }
 
     @Override
-    public synchronized void delete(T model) {
+    public synchronized void delete(M model) {
 
         var models = read();
         if (models.isEmpty()) return;
@@ -85,7 +85,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
     /// Build a JSON array string from a list of models.
     /// @param models The list of models to serialize.
     /// @return A JSON array string representing the models.
-    private String buildJson(List<T> models) {
+    private String buildJson(List<M> models) {
 
         var sb = new StringBuilder();
         sb.append("[");
@@ -100,7 +100,7 @@ public class JsonStorageEngine<T extends Model> extends FileStorageEngine<T> {
 
     /// Write the list of models to the storage file as a JSON array.
     /// @param models The list of models to write.
-    private void writeModelsAsJson(List<T> models) {
+    private void writeModelsAsJson(List<M> models) {
 
         var json = buildJson(models);
         var lines = new ArrayList<String>();

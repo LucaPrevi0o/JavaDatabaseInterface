@@ -15,12 +15,13 @@ import java.util.logging.Logger;
 /// The JsonSerializer is designed to work with any model implementing the Model interface.
 /// This allows for flexibility in handling different types of data models,
 /// in order for the storage engines to utilize JSON serialization logic.
+/// @param <M> The type of model to be serialized.
 public interface JsonSerializer extends Serializer {
 
     Logger logger = Logger.getLogger(JsonSerializer.class.getName());
 
     @Override
-    default <T extends Model> String serialize(T model) {
+    default <M extends Model> String serialize(M model) {
 
         var fields = model.getClass().getDeclaredFields();
         var jsonBuilder = new StringBuilder();
@@ -68,16 +69,14 @@ public interface JsonSerializer extends Serializer {
 
             jsonBuilder.append("[");
             var length = Array.getLength(value);
-            for (int j = 0; j < length; j++) {
+            for (var j = 0; j < length; j++) {
 
                 var element = Array.get(value, j);
                 appendField(jsonBuilder, element);
                 if (j < length - 1) jsonBuilder.append(",");
             }
             jsonBuilder.append("]");
-        }
-        else if (value instanceof Model m) jsonBuilder.append(serialize(m));
-        else jsonBuilder.append("\"").append(escapeJsonString(value.toString())).append("\"");
+        } else jsonBuilder.append("\"").append(escapeJsonString(value.toString())).append("\"");
     }
 
     /// Escape special characters in a JSON string.

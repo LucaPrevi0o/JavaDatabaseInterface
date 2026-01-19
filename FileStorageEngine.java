@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 ///
 /// Subclasses can implement specific serialization formats by overriding the `create`, `read`,`update`and
 /// `delete` methods or by utilizing the provided protected helper methods for reading and writing serialized lines.
-/// @param <T> The type of model being stored, which must implement the Model interface.
-public abstract class FileStorageEngine<T extends Model> extends StorageEngine<T> {
+/// @param <M> The type of model being stored, which must implement the Model interface.
+public abstract class FileStorageEngine<M extends Model> extends StorageEngine<M> {
 
     private static final Logger logger = Logger.getLogger(FileStorageEngine.class.getName());
     private final Path path;
@@ -129,19 +129,19 @@ public abstract class FileStorageEngine<T extends Model> extends StorageEngine<T
     }
 
     @Override
-    public synchronized void create(T model) { appendSerializedLine(serializer.serialize(model)); }
+    public synchronized void create(M model) { appendSerializedLine(serializer.serialize(model)); }
 
     @Override
-    public synchronized List<T> read() {
+    public synchronized List<M> read() {
 
         var lines = readAllSerializedLines();
-        var out = new ArrayList<T>();
+        var out = new ArrayList<M>();
         for (var line : lines) out.add(serializer.deserialize(line));
         return out;
     }
 
     @Override
-    public synchronized void update(T model, T updatedModel) {
+    public synchronized void update(M model, M updatedModel) {
 
         var models = read();
         if (models.isEmpty()) return;
@@ -156,7 +156,7 @@ public abstract class FileStorageEngine<T extends Model> extends StorageEngine<T
     }
 
     @Override
-    public synchronized void delete(T model) {
+    public synchronized void delete(M model) {
 
         var models = read();
         if (models.isEmpty()) return;
