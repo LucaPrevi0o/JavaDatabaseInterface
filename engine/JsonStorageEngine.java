@@ -12,7 +12,7 @@ import java.util.logging.Level;
 /// This engine reads and writes the entire collection of models as a single JSON array.
 /// Each model is serialized/deserialized using the provided JsonSerializer.
 /// @param <M> The type of model being stored, which must implement the Model interface.
-public abstract class JsonStorageEngine<M extends Model> extends FileStorageEngine<M> {
+public class JsonStorageEngine<M extends Model> extends FileStorageEngine<M> {
 
     /// Constructs a JsonStorageEngine with the specified file path and JSON serializer.
     /// @param path The file path where models will be stored.

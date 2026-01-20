@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 /// providing a suitable Serializer instance to the constructor: the storge engine
 /// itself is agnostic to the actual format used.
 /// @param <M> The type of model being stored.
-public abstract class FileStorageEngine<M extends Model> extends StorageEngine<M> {
+public class FileStorageEngine<M extends Model> extends StorageEngine<M> {
 
     private static final Logger logger = Logger.getLogger(FileStorageEngine.class.getName());
     private final Path path;

@@ -13,7 +13,7 @@ import java.util.List;
 /// This is useful for testing or temporary storage scenarios.
 ///
 /// @param <M> The type of model being stored.
-public abstract class MemoryStorageEngine<M extends Model> extends StorageEngine<M> {
+public class MemoryStorageEngine<M extends Model> extends StorageEngine<M> {
 
     List<M> storage = new ArrayList<>();
 
