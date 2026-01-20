@@ -22,6 +22,10 @@ public abstract class StorageEngine<M extends Model> {
     /// @return The serializer instance.
     public Serializer getSerializer() { return serializer; }
 
+    /// Get the class of the model managed by this storage engine.
+    /// @return The class of the model.
+    public abstract Class<M> getModelClass();
+
     /// Create a single model in the storage.
     /// @param model The model to create in the storage.
     public abstract void create(M model);
