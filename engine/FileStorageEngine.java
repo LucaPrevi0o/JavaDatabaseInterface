@@ -1,4 +1,8 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.engine;
+
+import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.Serializer;
+import com.lucaprevioo.jdbi.StorageEngine;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,9 +14,10 @@ import java.util.logging.Logger;
 
 /// An abstract storage engine that persists models in a file using line-based serialization.
 ///
-/// Subclasses can implement specific serialization formats by overriding the `create`, `read`,`update`and
-/// `delete` methods or by utilizing the provided protected helper methods for reading and writing serialized lines.
-/// @param <M> The type of model being stored, which must implement the Model interface.
+/// Any implementation should define the serialization and deserialization format, by
+/// providing a suitable Serializer instance to the constructor: the storge engine
+/// itself is agnostic to the actual format used.
+/// @param <M> The type of model being stored.
 public abstract class FileStorageEngine<M extends Model> extends StorageEngine<M> {
 
     private static final Logger logger = Logger.getLogger(FileStorageEngine.class.getName());

@@ -1,4 +1,8 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.engine;
+
+import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.Serializer;
+import com.lucaprevioo.jdbi.StorageEngine;
 
 import java.util.ArrayList;
 import java.util.List;

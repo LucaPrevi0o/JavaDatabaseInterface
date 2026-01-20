@@ -1,4 +1,7 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.engine;
+
+import com.lucaprevioo.jdbi.serializer.JsonSerializer;
+import com.lucaprevioo.jdbi.Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +17,7 @@ public class JsonStorageEngine<M extends Model> extends FileStorageEngine<M> {
     /// Constructs a JsonStorageEngine with the specified file path and JSON serializer.
     /// @param path The file path where models will be stored.
     /// @param serializer The JsonSerializer used for serializing and deserializing models.
-    public JsonStorageEngine(String path, JsonSerializer serializer) {
-        super(path, serializer);
-    }
+    public JsonStorageEngine(String path, JsonSerializer serializer) { super(path, serializer); }
 
     @Override
     public synchronized void create(M model) {

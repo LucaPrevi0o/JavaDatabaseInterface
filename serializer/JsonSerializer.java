@@ -1,4 +1,7 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.serializer;
+
+import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.Serializer;
 
 import java.lang.reflect.Array;
 import java.util.logging.Level;
@@ -15,7 +18,6 @@ import java.util.logging.Logger;
 /// The JsonSerializer is designed to work with any model implementing the Model interface.
 /// This allows for flexibility in handling different types of data models,
 /// in order for the storage engines to utilize JSON serialization logic.
-/// @param <M> The type of model to be serialized.
 public interface JsonSerializer extends Serializer {
 
     Logger logger = Logger.getLogger(JsonSerializer.class.getName());
