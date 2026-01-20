@@ -1,7 +1,5 @@
 package com.lucaprevioo.jdbi;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /// Abstract representation of a database that can manage multiple storage engines
@@ -13,33 +11,38 @@ import java.util.function.Consumer;
 /// while maintaining a consistent interface for model operations.
 public abstract class Database {
 
-    protected final List<StorageEngine> serializers = new ArrayList<>();
+    /// Represents a transaction context for performing actions on a specific storage engine.
+    /// @param <M> The type of model managed by the storage engine.
+    /// @param <S> The type of storage engine.
+    public static class Transaction<M extends Model, S extends StorageEngine<M>> {
 
-    /// Register a storage engine to be used by the database for a specific model type.
-    /// @param <M> The type of model for which the storage engine is registered.
-    /// @param <S> The type of the storage engine.
-    /// @param storageEngine The storage engine to register.
-    public <M extends Model, S extends StorageEngine<M>> void register(S storageEngine) {
-        this.serializers.add(storageEngine);
-    }
+        private final S engine;
+        private final Consumer<S> actions;
 
-    /// Get a storage engine for the specified model type.
-    /// @param <M> The type of model for which to get the storage engine.
-    /// @return A StorageEngine for the specified model type.
-    public <M extends Model> StorageEngine<M> getStorageEngine(Class<M> modelClass) {
+        /// Constructs a Transaction with the specified storage engine and actions.
+        /// @param engine  The storage engine instance for the transaction.
+        /// @param actions A consumer that defines the actions to be performed within the transaction.
+        public Transaction(S engine, Consumer<S> actions) {
 
-        for (var engine : serializers)
-            if (engine.getModelClass().equals(modelClass)) return engine;
-        return null;
+            this.engine = engine;
+            this.actions = actions;
+        }
+
+        /// Commits the transaction by executing the defined actions on the storage engine.
+        public void commit() { actions.accept(engine); }
+
+        /// Rolls back the transaction. (No-op in this implementation)
+        public void rollback() { }
     }
 
     /// Begin a transaction for the specified model type, executing the provided actions.
-    /// @param <M> The type of model for which to begin the transaction.
-    /// @param modelClass The class of the model type.
+    ///
+    /// @param <M>     The type of model for which to begin the transaction.
+    /// @param <S>     The type of storage engine managing the model.
+    /// @param engine  The storage engine instance for the specified model type.
     /// @param actions A consumer that defines the actions to be performed within the transaction.
-    public <M extends Model> void beginTransaction(Class<M> modelClass, Consumer<StorageEngine<M>> actions) {
-
-        var engine = getStorageEngine(modelClass);
-        actions.accept(engine);
+    /// @return A Transaction object representing the transaction context.
+    public <M extends Model, S extends StorageEngine<M>> Transaction<M, S> beginTransaction(S engine, Consumer<S> actions) {
+        return new Transaction<>(engine, actions);
     }
 }
