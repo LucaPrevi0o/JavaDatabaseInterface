@@ -7,7 +7,13 @@ import com.lucaprevioo.jdbi.StorageEngine;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MemoryStorageEngine<M extends Model> extends StorageEngine<M> {
+/// An in-memory storage engine that keeps models in a list.
+///
+/// Using this storage engine, models are stored in memory and are not persisted to disk.
+/// This is useful for testing or temporary storage scenarios.
+///
+/// @param <M> The type of model being stored.
+public abstract class MemoryStorageEngine<M extends Model> extends StorageEngine<M> {
 
     List<M> storage = new ArrayList<>();
 
