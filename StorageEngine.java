@@ -22,10 +22,6 @@ public abstract class StorageEngine<M extends Model> {
     /// @return The serializer instance.
     public Serializer getSerializer() { return serializer; }
 
-    /// Get the class of the model managed by this storage engine.
-    /// @return The class of the model.
-    public abstract Class<M> getModelClass();
-
     /// Create a single model in the storage.
     /// @param model The model to create in the storage.
     public abstract void create(M model);
@@ -69,5 +65,9 @@ public abstract class StorageEngine<M extends Model> {
 
     /// Delete models from the storage that match the given predicate.
     /// @param matcher A predicate to match models to be deleted.
-    public void delete(Predicate<M> matcher) { for (var t : read()) if (matcher.test(t)) delete(t); }
+    public void delete(Predicate<M> matcher) {
+
+        var snapshot = new ArrayList<>(read());
+        for (var t : snapshot) if (matcher.test(t)) delete(t);
+    }
 }
