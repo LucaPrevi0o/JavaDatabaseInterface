@@ -18,7 +18,10 @@ public class Database {
     /// @param engine  The storage engine instance for the specified model type.
     /// @param actions A consumer that defines the actions to be performed within the transaction.
     /// @return A Transaction object representing the transaction context.
-    public <M extends Model, S extends StorageEngine<M>> Transaction<M, S> beginTransaction(S engine, Consumer<S> actions) {
-        return new Transaction<>(engine, actions);
+    public <M extends Model, S extends StorageEngine<M>> Transaction<M, S> begin(S engine, Consumer<TransactionBuilder<M>> actions) {
+
+        var builder = new TransactionBuilder<M>();
+        actions.accept(builder);
+        return new Transaction<>(engine, builder.build());
     }
 }
