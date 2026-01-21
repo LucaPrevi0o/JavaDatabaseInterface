@@ -1,5 +1,8 @@
 package com.lucaprevioo.jdbi;
 
+import com.lucaprevioo.jdbi.transaction.Transaction;
+import com.lucaprevioo.jdbi.transaction.TransactionBuilder;
+
 import java.util.function.Consumer;
 
 /// Abstract representation of a database that can manage multiple storage engines

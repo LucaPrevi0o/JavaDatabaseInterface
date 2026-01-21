@@ -1,13 +1,14 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.transaction;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.lucaprevioo.jdbi.actions.CreateAction;
-import com.lucaprevioo.jdbi.actions.DeleteAction;
-import com.lucaprevioo.jdbi.actions.UpdateClass;
+import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.transaction.actions.CreateAction;
+import com.lucaprevioo.jdbi.transaction.actions.DeleteAction;
+import com.lucaprevioo.jdbi.transaction.actions.UpdateClass;
 
 public class TransactionBuilder<M extends Model> {
 

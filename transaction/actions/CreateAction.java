@@ -1,6 +1,6 @@
-package com.lucaprevioo.jdbi.actions;
+package com.lucaprevioo.jdbi.transaction.actions;
 
-import com.lucaprevioo.jdbi.Action;
+import com.lucaprevioo.jdbi.transaction.Action;
 import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.StorageEngine;
 

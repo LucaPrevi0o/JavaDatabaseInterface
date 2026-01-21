@@ -1,4 +1,7 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.transaction;
+
+import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.StorageEngine;
 
 import java.util.List;
 
