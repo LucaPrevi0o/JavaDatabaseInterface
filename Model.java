@@ -34,4 +34,20 @@ public interface Model {
         }
         return false;
     }
+
+    /// Checks if the model satisfies all not-null constraints defined by the {@code @NotNull} annotation.
+    ///
+    /// Fields annotated with {@code @NotNull} must have non-null values. This method checks if any of those fields are null.
+    /// @param engine The storage engine to check against (not used in this method but included for consistency with the unique constraints method).
+    /// @return {@code true} if the model satisfies all not-null constraints, {@code false} if any field marked with {@code @NotNull} is null.
+    default <M extends Model, S extends StorageEngine<M>> boolean checkNotNullConstraints(S engine) {
+
+        for (var field : this.getClass().getDeclaredFields()) if (field.isAnnotationPresent(NotNull.class)) {
+
+            field.setAccessible(true);
+            try { return field.get(this) != null; }
+            catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
+        }
+        return true;
+    }
 }
