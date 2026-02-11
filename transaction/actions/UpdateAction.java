@@ -22,7 +22,7 @@ public class UpdateAction<M extends Model> implements Action<M> {
     public void execute(StorageEngine<M> engine) {
 
         var value = updater.apply(null);
-        if (!value.checkUniqueConstraints(engine))
+        if (value.checkUniqueConstraints(engine))
             throw new RuntimeException("Unique constraint violation for updated model: " + value);
         engine.update(predicate, updater);
     }

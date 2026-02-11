@@ -28,10 +28,10 @@ public interface Model {
                             return value.equals(f.get(m));
                         } catch (NoSuchFieldException | IllegalAccessException e) { return false; }
                     });
-                    return existing.isEmpty();
+                    return !existing.isEmpty();
                 }
             } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
         }
-        return true;
+        return false;
     }
 }
