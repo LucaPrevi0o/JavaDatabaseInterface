@@ -18,10 +18,6 @@ public abstract class StorageEngine<M extends Model> {
     /// @param serializer The serializer to use for model serialization and deserialization.
     public StorageEngine(Serializer serializer) { this.serializer = serializer; }
 
-    /// Get the serializer used by this storage engine.
-    /// @return The serializer instance.
-    public Serializer getSerializer() { return serializer; }
-
     /// Create a single model in the storage.
     /// @param model The model to create in the storage.
     public abstract void create(M model);

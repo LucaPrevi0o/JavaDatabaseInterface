@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.transaction.actions.CreateAction;
 import com.lucaprevioo.jdbi.transaction.actions.DeleteAction;
-import com.lucaprevioo.jdbi.transaction.actions.UpdateClass;
+import com.lucaprevioo.jdbi.transaction.actions.UpdateAction;
 
 public class TransactionBuilder<M extends Model> {
 
@@ -16,14 +16,14 @@ public class TransactionBuilder<M extends Model> {
 
     public void create(M model) { actions.add(new CreateAction<>(model)); }
 
-    public void create(M[] models) { for (M model : models) create(model); }
+    public void create(M[] models) { for (var model : models) create(model); }
 
     public void update(M model, M updatedModel) {
-        actions.add(new UpdateClass<>(m -> m.equals(model), _ -> updatedModel));
+        actions.add(new UpdateAction<>(m -> m.equals(model), _ -> updatedModel));
     }
 
     public void update(Predicate<M> predicate, Function<M, M> updater) {
-        actions.add(new UpdateClass<>(predicate, updater));
+        actions.add(new UpdateAction<>(predicate, updater));
     }
 
     public void delete(M model) { actions.add(new DeleteAction<>(m -> m.equals(model))); }
