@@ -21,9 +21,7 @@ public class UpdateAction<M extends Model> implements Action<M> {
     @Override
     public void execute(StorageEngine<M> engine) {
 
-        var value = updater.apply(null);
-        if (value.checkUniqueConstraints(engine)) throw new RuntimeException("Unique constraint violation for updated model: " + value);
-        if (value.checkNotNullConstraints(engine)) throw new RuntimeException("Not-null constraint violation for updated model: " + value);
+        if (updater.apply(null).validate(engine)) throw new RuntimeException("Validation failed for updated model: " + updater.apply(null));
         engine.update(predicate, updater);
     }
 }

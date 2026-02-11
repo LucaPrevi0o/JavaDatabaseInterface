@@ -13,8 +13,7 @@ public class CreateAction<M extends Model> implements Action<M> {
     @Override
     public void execute(StorageEngine<M> engine) {
 
-        if (model.checkUniqueConstraints(engine)) throw new RuntimeException("Unique constraint violation for model: " + model);
-        if (model.checkNotNullConstraints(engine)) throw new RuntimeException("Not-null constraint violation for model: " + model);
+        if (model.validate(engine)) throw new RuntimeException("Validation failed for model: " + model);
         engine.create(model);
     }
 }
