@@ -1,4 +1,4 @@
-package com.lucaprevioo.jdbi;
+package com.lucaprevioo.jdbi.validator;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

@@ -1,5 +1,7 @@
 package com.lucaprevioo.jdbi;
 
+import com.lucaprevioo.jdbi.validator.*;
+
 /// Marker interface for data models.
 ///
 /// Models are plain Java objects that represent data entities in the storage engine.
