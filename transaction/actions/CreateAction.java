@@ -13,7 +13,7 @@ public class CreateAction<M extends Model> implements Action<M> {
     @Override
     public void execute(StorageEngine<M> engine) {
 
-        if (model.validate(engine)) throw new RuntimeException("Validation failed for model: " + model);
+        if (!model.validate(engine)) throw new RuntimeException("Validation failed for model: " + model);
         engine.create(model);
     }
 }

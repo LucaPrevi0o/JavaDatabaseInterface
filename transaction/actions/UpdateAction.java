@@ -21,7 +21,15 @@ public class UpdateAction<M extends Model> implements Action<M> {
     @Override
     public void execute(StorageEngine<M> engine) {
 
-        if (updater.apply(null).validate(engine)) throw new RuntimeException("Validation failed for updated model: " + updater.apply(null));
+        // Validate all updated models on a snapshot before applying updates to avoid partial updates
+        var snapshot = engine.read();
+        for (var item : snapshot) if (predicate.test(item)) {
+
+            var updated = updater.apply(item);
+            if (!updated.validate(engine)) throw new RuntimeException("Validation failed for updated model: " + updated);
+        }
+
+        // All validations passed, perform the update
         engine.update(predicate, updater);
     }
 }

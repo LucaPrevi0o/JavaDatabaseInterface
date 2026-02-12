@@ -36,6 +36,7 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> {
             for (var action : actions) action.execute(engine);
         } catch (Exception e) {
 
+            System.out.println("Transaction failed: " + e.getMessage() + ".");
             try { rollback(); }
             catch (Exception re) { throw new RuntimeException("Rollback failed: " + re.getMessage(), re); }
         } finally { snapshot = null; }
