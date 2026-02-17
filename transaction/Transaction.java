@@ -42,6 +42,28 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> {
         } finally { snapshot = null; }
     }
 
+    /// Commits multiple transactions atomically. If any transaction fails, all transactions are rolled back.
+    /// @param <M> The type of model managed by the storage engines.
+    /// @param <S> The type of storage engines.
+    /// @param transactions An array of transactions to be committed together.
+    public static <M extends Model, S extends StorageEngine<M>> void commit(List<Transaction<M, S>> transactions) {
+
+        try {
+
+            for (var transaction : transactions) transaction.snapshot = transaction.engine.read();
+            for (var transaction : transactions)
+                for (var action : transaction.actions) action.execute(transaction.engine);
+        } catch (Exception e) {
+
+            System.out.println("Transaction batch failed: " + e.getMessage() + ".");
+            for (var transaction : transactions) {
+
+                try { transaction.rollback(); }
+                catch (Exception re) { System.out.println("Rollback failed for a transaction: " + re.getMessage()); }
+            }
+        }
+    }
+
     /// Rolls back the transaction by restoring the storage engine to its previous state.
     public void rollback() {
 
