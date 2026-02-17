@@ -5,13 +5,9 @@ import com.lucaprevioo.jdbi.transaction.TransactionBuilder;
 
 import java.util.function.Consumer;
 
-/// Abstract representation of a database that can manage multiple storage engines
-/// using a common serializer type.
-///
-/// It provides methods to register storage engines, retrieve them based on model types,
-/// and perform actions within a transaction context.
-/// The use of a database allows for flexibility in managing different storage backends
-/// while maintaining a consistent interface for model operations.
+/// The Database class serves as the main entry point for managing transactions on models using storage engines.
+/// It provides a method to begin a transaction for a specified model type, allowing users to define the actions
+/// to be performed within the transaction context.
 public class Database {
 
     /// Begin a transaction for the specified model type, executing the provided actions.

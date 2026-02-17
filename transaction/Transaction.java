@@ -32,44 +32,6 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> implements
     @Override
     public void execute() { for (var action : actions) action.execute(engine); }
 
-    /// Commits the transaction by executing the defined actions on the storage engine.
-    /// If any action fails, the transaction is rolled back to restore the previous state.
-    public void commit() {
-
-        try {
-
-            snapshot();
-            execute();
-        } catch (Exception e) {
-
-            System.out.println("Transaction failed: " + e.getMessage() + ".");
-            try { rollback(); }
-            catch (Exception re) { throw new RuntimeException("Rollback failed: " + re.getMessage(), re); }
-        } finally { snapshot = null; }
-    }
-
-    /// Commits multiple transactions atomically. If any transaction fails, all transactions are rolled back.
-    /// @param <M> The type of model managed by the storage engines.
-    /// @param <S> The type of storage engines.
-    /// @param transactions An array of transactions to be committed together.
-    public static <M extends Model, S extends StorageEngine<M>> void commit(List<Committable> transactions) {
-
-        try {
-
-            for (var t : transactions) t.snapshot();
-            for (var t : transactions) t.execute();
-        } catch (Exception e) {
-
-            System.out.println("Transaction batch failed: " + e.getMessage() + ".");
-            for (var t : transactions) {
-
-                try { t.rollback(); }
-                catch (Exception re) { System.out.println("Rollback failed for a transaction: " + re.getMessage()); }
-            }
-        }
-    }
-
-    /// Rolls back the transaction by restoring the storage engine to its previous state.
     @Override
     public void rollback() {
 
