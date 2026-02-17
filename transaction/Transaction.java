@@ -11,7 +11,7 @@ import java.util.List;
 /// If any action fails, the transaction can be rolled back to restore the previous state.
 /// @param <M> The type of model managed by the storage engine.
 /// @param <S> The type of storage engine.
-public class Transaction<M extends Model, S extends StorageEngine<M>> {
+public class Transaction<M extends Model, S extends StorageEngine<M>> implements Committable {
 
     private final S engine;
     private final List<Action<M, S>> actions;
@@ -26,14 +26,20 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> {
         this.actions = actions;
     }
 
+    @Override
+    public void snapshot() { snapshot = engine.read();}
+
+    @Override
+    public void execute() { for (var action : actions) action.execute(engine); }
+
     /// Commits the transaction by executing the defined actions on the storage engine.
     /// If any action fails, the transaction is rolled back to restore the previous state.
     public void commit() {
 
         try {
 
-            snapshot = engine.read();
-            for (var action : actions) action.execute(engine);
+            snapshot();
+            execute();
         } catch (Exception e) {
 
             System.out.println("Transaction failed: " + e.getMessage() + ".");
@@ -46,25 +52,25 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> {
     /// @param <M> The type of model managed by the storage engines.
     /// @param <S> The type of storage engines.
     /// @param transactions An array of transactions to be committed together.
-    public static <M extends Model, S extends StorageEngine<M>> void commit(List<Transaction<M, S>> transactions) {
+    public static <M extends Model, S extends StorageEngine<M>> void commit(List<Committable> transactions) {
 
         try {
 
-            for (var transaction : transactions) transaction.snapshot = transaction.engine.read();
-            for (var transaction : transactions)
-                for (var action : transaction.actions) action.execute(transaction.engine);
+            for (var t : transactions) t.snapshot();
+            for (var t : transactions) t.execute();
         } catch (Exception e) {
 
             System.out.println("Transaction batch failed: " + e.getMessage() + ".");
-            for (var transaction : transactions) {
+            for (var t : transactions) {
 
-                try { transaction.rollback(); }
+                try { t.rollback(); }
                 catch (Exception re) { System.out.println("Rollback failed for a transaction: " + re.getMessage()); }
             }
         }
     }
 
     /// Rolls back the transaction by restoring the storage engine to its previous state.
+    @Override
     public void rollback() {
 
         if (snapshot == null) throw new RuntimeException("No snapshot available for rollback.");
