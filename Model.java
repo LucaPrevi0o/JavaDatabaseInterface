@@ -9,6 +9,28 @@ import java.lang.reflect.Field;
 /// They can have annotated fields to enforce multiple constraints on the data.
 public interface Model {
 
+    /// Helper method to find if a value already exists in the storage engine for a given field.
+    ///
+    /// This method is used to check for unique constraints by searching through the existing models in the storage engine
+    /// and comparing the value of the specified field with the provided value.
+    /// @param engine The storage engine to search through for existing models.
+    /// @param field The field to check for the unique value.
+    /// @param value The value to check for uniqueness.
+    /// @return {@code true} if the value is unique (i.e., not found in any existing model), {@code false} if the value
+    /// already exists in the storage engine for the specified field.
+    private <M extends Model, S extends StorageEngine<M>> boolean findValue(S engine, Field field, Object value) {
+
+        return engine.read(m -> {
+
+            try {
+
+                var declaredField = m.getClass().getDeclaredField(field.getName());
+                declaredField.setAccessible(true);
+                return declaredField.get(m).equals(value);
+            } catch (NoSuchFieldException | IllegalAccessException e) { throw new RuntimeException(e); }
+        }).isEmpty();
+    }
+
     /// Checks if the model satisfies all unique constraints defined by the {@code @Unique} annotation.
     /// Inside the database, no two models can have the same value for a field marked with {@code @Unique}.
     /// @param engine The storage engine to check against for existing models with the same unique field values.
@@ -19,17 +41,7 @@ public interface Model {
         try {
 
             var value = field.get(this);
-            if (value != null) return engine.read(m -> {
-
-                try {
-
-                    var declaredField = m.getClass().getDeclaredField(field.getName());
-                    declaredField.setAccessible(true);
-                    var fieldValue = declaredField.get(m);
-                    System.out.println("Comparing unique field value: " + fieldValue + " with " + value);
-                    return fieldValue.equals(value);
-                } catch (NoSuchFieldException | IllegalAccessException e) { throw new RuntimeException(e); }
-            }).isEmpty();
+            if (value != null) return findValue(engine, field, value);
         } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
         return false;
     }
@@ -113,12 +125,20 @@ public interface Model {
     /// @param field The field to check for foreign key constraints.
     /// @return {@code true} if the model satisfies all foreign key constraints, {@code false} if there is a type
     /// mismatch between the foreign key field and the target model's ID field.
-    private boolean checkForeignKeyConstraints(Field field) {
+    private <M extends Model, S extends StorageEngine<M>> boolean checkForeignKeyConstraints(S engine, Field field) {
 
         var targetModelClass = field.getAnnotation(ForeignKey.class).targetModel();
         var targetIdField = getIdField(targetModelClass);
         if (targetIdField == null) throw new RuntimeException("Target model " + targetModelClass.getName() + " does not have an ID field");
-        return field.getType().equals(targetIdField.getType());
+        if (!field.getType().equals(targetIdField.getType())) return false;
+
+        field.setAccessible(true);
+        try {
+
+            var targetIdValue = field.get(this);
+            if (targetIdValue == null) return false;
+            return findValue(engine, targetIdField, targetIdValue);
+        } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
     }
 
     /// Retrieves the field annotated with {@code @Id} from the specified target model class.
@@ -156,7 +176,7 @@ public interface Model {
                 throw new RuntimeException("Size constraint violated for model: " + this);
             if (field.isAnnotationPresent(AllowedValues.class) && !checkAllowedValuesConstraints(field))
                 throw new RuntimeException("Allowed values constraint violated for model: " + this);
-            if (field.isAnnotationPresent(ForeignKey.class) && !checkForeignKeyConstraints(field))
+            if (field.isAnnotationPresent(ForeignKey.class) && !checkForeignKeyConstraints(engine, field))
                 throw new RuntimeException("Foreign key constraint violated for model: " + this);
         }
         return true;
