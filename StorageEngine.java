@@ -12,11 +12,11 @@ import java.util.function.Predicate;
 /// @param <M> The type of model managed by the storage engine.
 public abstract class StorageEngine<M extends Model> {
 
-    protected final Serializer serializer;
+    protected final Serializer<M> serializer;
 
     /// Constructs a StorageEngine with the specified serializer.
     /// @param serializer The serializer to use for model serialization and deserialization.
-    public StorageEngine(Serializer serializer) { this.serializer = serializer; }
+    public StorageEngine(Serializer<M> serializer) { this.serializer = serializer; }
 
     /// Create a single model in the storage.
     /// @param model The model to create in the storage.
@@ -35,9 +35,11 @@ public abstract class StorageEngine<M extends Model> {
     /// @return A list of models that match the given predicate.
     public List<M> read(Predicate<M> matcher) {
 
+        System.out.println("Reading items matching the predicate...");
         var results = new ArrayList<M>();
         for (var item : read())
             if (matcher.test(item)) results.add(item);
+        System.out.println("Read " + results.size() + " items matching the predicate.");
         return results;
     }
 

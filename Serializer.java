@@ -12,15 +12,15 @@ package com.lucaprevioo.jdbi;
 /// The serializer is designed to work with any model implementing the Model interface.
 /// This allows for flexibility in handling different types of data models,
 /// in order for the storage engines to utilize the same serialization logic.
-public interface Serializer {
+public interface Serializer<M extends Model> {
 
     /// Serialize the model into a storable line.
     /// @param model The model instance to serialize.
     /// @return The serialized representation of the model.
-    <M extends Model> String serialize(M model);
+    String serialize(M model);
 
     /// De-serialize the given data into a model instance.
     /// @param data The serialized data.
     /// @return The deserialized model instance.
-    <M extends Model> M deserialize(String data);
+    M deserialize(String data);
 }

@@ -26,7 +26,7 @@ public class FileStorageEngine<M extends Model> extends StorageEngine<M> {
     /// Constructs a FileStorageEngine with the specified file path and serializer.
     /// @param path The file path where models will be stored.
     /// @param serializer The serializer used for serializing and deserializing models.
-    public FileStorageEngine(String path, Serializer serializer) {
+    public FileStorageEngine(String path, Serializer<M> serializer) {
 
         super(serializer);
         this.path = Path.of(path);

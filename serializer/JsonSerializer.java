@@ -18,12 +18,12 @@ import java.util.logging.Logger;
 /// The JsonSerializer is designed to work with any model implementing the Model interface.
 /// This allows for flexibility in handling different types of data models,
 /// in order for the storage engines to utilize JSON serialization logic.
-public interface JsonSerializer extends Serializer {
+public interface JsonSerializer<M extends Model> extends Serializer<M> {
 
     Logger logger = Logger.getLogger(JsonSerializer.class.getName());
 
     @Override
-    default <M extends Model> String serialize(M model) {
+    default String serialize(M model) {
 
         var fields = model.getClass().getDeclaredFields();
         var jsonBuilder = new StringBuilder();

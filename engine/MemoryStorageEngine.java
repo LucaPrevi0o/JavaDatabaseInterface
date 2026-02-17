@@ -19,7 +19,7 @@ public class MemoryStorageEngine<M extends Model> extends StorageEngine<M> {
 
     /// Constructs a MemoryStorageEngine with the specified serializer.
     /// @param serializer The serializer used for serializing and deserializing models.
-    public MemoryStorageEngine(Serializer serializer) { super(serializer); }
+    public MemoryStorageEngine(Serializer<M> serializer) { super(serializer); }
 
     @Override
     public void create(M model) { storage.add(model); }
