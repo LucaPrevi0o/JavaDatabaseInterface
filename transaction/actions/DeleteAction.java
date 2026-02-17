@@ -6,12 +6,12 @@ import com.lucaprevioo.jdbi.StorageEngine;
 
 import java.util.function.Predicate;
 
-public class DeleteAction<M extends Model> implements Action<M> {
+public class DeleteAction<M extends Model, S extends StorageEngine<M>> implements Action<M, S> {
 
     private final Predicate<M> predicate;
 
     public DeleteAction(Predicate<M> predicate) { this.predicate = predicate; }
 
     @Override
-    public void execute(StorageEngine<M> engine) { engine.delete(predicate); }
+    public void execute(S engine) { engine.delete(predicate); }
 }

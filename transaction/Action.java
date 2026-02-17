@@ -4,4 +4,4 @@ import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.StorageEngine;
 
 @FunctionalInterface
-public interface Action<M extends Model> { void execute(StorageEngine<M> engine); }
+public interface Action<M extends Model, S extends StorageEngine<M>> { void execute(S engine); }

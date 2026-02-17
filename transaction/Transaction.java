@@ -14,13 +14,13 @@ import java.util.List;
 public class Transaction<M extends Model, S extends StorageEngine<M>> {
 
     private final S engine;
-    private final List<Action<M>> actions;
+    private final List<Action<M, S>> actions;
     private List<M> snapshot = null;
 
     /// Constructs a Transaction with the specified storage engine and actions.
     /// @param engine  The storage engine instance for the transaction.
     /// @param actions A consumer that defines the actions to be performed within the transaction.
-    public Transaction(S engine, List<Action<M>> actions) {
+    public Transaction(S engine, List<Action<M, S>> actions) {
 
         this.engine = engine;
         this.actions = actions;

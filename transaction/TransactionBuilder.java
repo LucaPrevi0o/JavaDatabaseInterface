@@ -6,13 +6,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.StorageEngine;
 import com.lucaprevioo.jdbi.transaction.actions.CreateAction;
 import com.lucaprevioo.jdbi.transaction.actions.DeleteAction;
 import com.lucaprevioo.jdbi.transaction.actions.UpdateAction;
 
-public class TransactionBuilder<M extends Model> {
+public class TransactionBuilder<M extends Model, S extends StorageEngine<M>> {
 
-    private final List<Action<M>> actions = new ArrayList<>();
+    private final List<Action<M, S>> actions = new ArrayList<>();
 
     public void create(M model) { actions.add(new CreateAction<>(model)); }
 
@@ -30,5 +31,5 @@ public class TransactionBuilder<M extends Model> {
 
     public void delete(Predicate<M> predicate) { actions.add(new DeleteAction<>(predicate)); }
 
-    public List<Action<M>> build() { return actions; }
+    public List<Action<M, S>> build() { return actions; }
 }
