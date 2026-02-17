@@ -1,9 +1,7 @@
 package com.lucaprevioo.jdbi;
 
 import com.lucaprevioo.jdbi.validator.*;
-
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /// Marker interface for data models.
 ///
@@ -21,7 +19,17 @@ public interface Model {
         try {
 
             var value = field.get(this);
-            if (value != null) return engine.read(m -> m.equals(value)).isEmpty();
+            if (value != null) return engine.read(m -> {
+
+                try {
+
+                    var declaredField = m.getClass().getDeclaredField(field.getName());
+                    declaredField.setAccessible(true);
+                    var fieldValue = declaredField.get(m);
+                    System.out.println("Comparing unique field value: " + fieldValue + " with " + value);
+                    return fieldValue.equals(value);
+                } catch (NoSuchFieldException | IllegalAccessException e) { throw new RuntimeException(e); }
+            }).isEmpty();
         } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
         return false;
     }
@@ -97,22 +105,50 @@ public interface Model {
         } catch (Exception e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
     }
 
+    /// Checks if the model satisfies all foreign key constraints defined by the {@code @ForeignKey} annotation.
+    ///
+    /// Fields annotated with {@code @ForeignKey} must reference a valid model instance of the specified target model class.
+    /// This method checks if any of those fields reference a non-existing model instance or if there is a type mismatch
+    /// between the foreign key field and the target model's ID field.
+    /// @param field The field to check for foreign key constraints.
+    /// @return {@code true} if the model satisfies all foreign key constraints, {@code false} if there is a type
+    /// mismatch between the foreign key field and the target model's ID field.
+    private boolean checkForeignKeyConstraints(Field field) {
+
+        var targetModelClass = field.getAnnotation(ForeignKey.class).targetModel();
+        var targetIdField = getIdField(targetModelClass);
+        if (targetIdField == null) throw new RuntimeException("Target model " + targetModelClass.getName() + " does not have an ID field");
+        return field.getType().equals(targetIdField.getType());
+    }
+
+    /// Retrieves the field annotated with {@code @Id} from the specified target model class.
+    ///
+    /// This method iterates through the declared fields of the target model class and returns the field that is annotated
+    /// with {@code @Id}. If no such field is found, it returns {@code null}.
+    /// @param targetModel The target model class to search for the ID field.
+    /// @return The field annotated with {@code @Id} from the specified target model class, or {@code null} if no such field is found.
+    private <T extends Model> Field getIdField(Class<T> targetModel) {
+
+        Field foundField = null;
+        for (var field : targetModel.getDeclaredFields()) if (field.isAnnotationPresent(Id.class)) {
+
+            if (foundField != null) throw new RuntimeException("ID constraint violated for model: " + targetModel);
+            foundField = field;
+        }
+        return foundField;
+    }
+
     /// Validates the model against all defined constraints.
     /// This method checks if the model satisfies all constraints defined by the annotations on its fields.
     /// @param engine The storage engine to check against for unique constraints and consistency with other constraints.
     /// @return {@code true} if the model satisfies all constraints
     default <M extends Model, S extends StorageEngine<M>> boolean validate(S engine) {
 
-        if (!checkNotNullConstraints()) throw new RuntimeException("Not-null constraint violated for model: " + this);
-        if (!checkUniqueConstraints(engine)) throw new RuntimeException("Unique constraint violated for model: " + this);
-        if (!checkRangeConstraints()) throw new RuntimeException("Range constraint violated for model: " + this);
-        if (!checkSizeConstraints()) throw new RuntimeException("Size constraint violated for model: " + this);
-        if (!checkAllowedValuesConstraints()) throw new RuntimeException("Allowed values constraint violated for model: " + this);
         for (var field : this.getClass().getDeclaredFields()) {
 
-            if (field.isAnnotationPresent(Unique.class) && !checkUniqueConstraints(engine, field))
+            if ((field.isAnnotationPresent(Unique.class) || field.isAnnotationPresent(Id.class)) && !checkUniqueConstraints(engine, field))
                 throw new RuntimeException("Unique constraint violated for model: " + this);
-            if (field.isAnnotationPresent(NotNull.class) && !checkNotNullConstraints(field))
+            if ((field.isAnnotationPresent(NotNull.class) || field.isAnnotationPresent(Id.class)) && !checkNotNullConstraints(field))
                 throw new RuntimeException("Not-null constraint violated for model: " + this);
             if (field.isAnnotationPresent(Range.class) && !checkRangeConstraints(field))
                 throw new RuntimeException("Range constraint violated for model: " + this);
@@ -120,6 +156,8 @@ public interface Model {
                 throw new RuntimeException("Size constraint violated for model: " + this);
             if (field.isAnnotationPresent(AllowedValues.class) && !checkAllowedValuesConstraints(field))
                 throw new RuntimeException("Allowed values constraint violated for model: " + this);
+            if (field.isAnnotationPresent(ForeignKey.class) && !checkForeignKeyConstraints(field))
+                throw new RuntimeException("Foreign key constraint violated for model: " + this);
         }
         return true;
     }
