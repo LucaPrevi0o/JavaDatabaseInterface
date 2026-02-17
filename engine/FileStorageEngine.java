@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 /// @param <M> The type of model being stored.
 public class FileStorageEngine<M extends Model> extends StorageEngine<M> {
 
+    protected final Serializer<M> serializer;
     private static final Logger logger = Logger.getLogger(FileStorageEngine.class.getName());
     private final Path path;
 
@@ -28,7 +29,7 @@ public class FileStorageEngine<M extends Model> extends StorageEngine<M> {
     /// @param serializer The serializer used for serializing and deserializing models.
     public FileStorageEngine(String path, Serializer<M> serializer) {
 
-        super(serializer);
+        this.serializer = serializer;
         this.path = Path.of(path);
     }
 

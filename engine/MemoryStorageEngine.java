@@ -17,9 +17,6 @@ public class MemoryStorageEngine<M extends Model> extends StorageEngine<M> {
 
     List<M> storage = new ArrayList<>();
 
-    /// Constructs a MemoryStorageEngine.
-    public MemoryStorageEngine() { super(null); }
-
     @Override
     public void create(M model) { storage.add(model); }
 
