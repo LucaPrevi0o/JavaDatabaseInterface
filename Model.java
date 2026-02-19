@@ -64,7 +64,6 @@ public interface Model {
 
             if (value instanceof String s) return s.length() >= sizeAnnotation.min() && s.length() <= sizeAnnotation.max();
             return Array.getLength(value) >= sizeAnnotation.min() && Array.getLength(value) <= sizeAnnotation.max();
-
         } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
     }
 
@@ -73,13 +72,13 @@ public interface Model {
         for (var field : this.getClass().getDeclaredFields()) {
 
             if (field.getAnnotation(Unique.class) != null && !checkUniqueConstraints(field, engine))
-                throw new FailedValidationException("Unique constraint violation on field: " + field.getName());
+                throw new FailedValidationException("Unique constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
             if (field.getAnnotation(NotNull.class) != null && !checkNotNullConstraints(field))
-                throw new FailedValidationException("Non-null constraint violation on field: " + field.getName());
+                throw new FailedValidationException("Non-null constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
             if (field.getAnnotation(Id.class) != null && !checkIdConstraints(field, engine))
-                throw new FailedValidationException("ID constraint violation on field: " + field.getName());
+                throw new FailedValidationException("ID constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
             if (field.getAnnotation(Size.class) != null && !checkSizeConstraints(field))
-                throw new FailedValidationException("Size constraint violation on field: " + field.getName());
+                throw new FailedValidationException("Size constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
         }
     }
 }

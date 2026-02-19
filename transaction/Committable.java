@@ -1,5 +1,6 @@
 package com.lucaprevioo.jdbi.transaction;
 
+import com.lucaprevioo.jdbi.exception.FailedRollbackException;
 import com.lucaprevioo.jdbi.exception.FailedTransactionException;
 
 import java.util.List;
@@ -26,9 +27,9 @@ public interface Committable {
             for (var t : transactions) t.execute();
         } catch (Exception e) {
 
-            System.err.println("Rolling back transaction due to commit failure: " + e.getMessage());
             for (var t : transactions) try { t.rollback(); }
-            catch (Exception re) { throw new RuntimeException("Rollback failed ", re); }
+            catch (Exception re) { e.addSuppressed(new FailedRollbackException("Rollback failed", re)); }
+            throw new FailedTransactionException("Rolled back due to transaction failure: " + e.getCause(), e);
         }
     }
 
@@ -41,9 +42,9 @@ public interface Committable {
             execute();
         } catch (Exception e) {
 
-            System.err.println("Rolling back transaction due to commit failure: " + e.getMessage());
             try { rollback(); }
-            catch (Exception re) { throw new RuntimeException("Rollback failed ", re); }
+            catch (Exception re) { e.addSuppressed(new FailedRollbackException("Rollback failed", re)); }
+            throw new FailedTransactionException("Rolled back due to transaction failure: " + e.getCause(), e);
         }
     }
 }
