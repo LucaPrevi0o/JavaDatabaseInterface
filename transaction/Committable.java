@@ -1,5 +1,7 @@
 package com.lucaprevioo.jdbi.transaction;
 
+import com.lucaprevioo.jdbi.exception.FailedTransactionException;
+
 import java.util.List;
 
 /// An interface representing a committable transaction, allowing for snapshotting, rolling back, and executing transactions.
@@ -16,7 +18,7 @@ public interface Committable {
 
     /// Commits multiple transactions atomically. If any transaction fails, all transactions are rolled back.
     /// @param transactions An array of committable transactions to be executed together.
-    static void commit(List<Committable> transactions) {
+    static void commit(List<? extends Committable> transactions) {
 
         try {
 
@@ -24,11 +26,9 @@ public interface Committable {
             for (var t : transactions) t.execute();
         } catch (Exception e) {
 
-            for (var t : transactions) {
-
-                try { t.rollback(); }
-                catch (Exception re) { System.out.println("Rollback failed for a transaction: " + re.getMessage()); }
-            }
+            System.err.println("Rolling back transaction due to commit failure: " + e.getMessage());
+            for (var t : transactions) try { t.rollback(); }
+            catch (Exception re) { throw new RuntimeException("Rollback failed ", re); }
         }
     }
 
@@ -41,8 +41,9 @@ public interface Committable {
             execute();
         } catch (Exception e) {
 
+            System.err.println("Rolling back transaction due to commit failure: " + e.getMessage());
             try { rollback(); }
-            catch (Exception re) { throw new RuntimeException("Rollback failed: " + re.getMessage(), re); }
+            catch (Exception re) { throw new RuntimeException("Rollback failed ", re); }
         }
     }
 }

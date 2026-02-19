@@ -3,11 +3,7 @@ package com.lucaprevioo.jdbi.transaction.actions;
 import com.lucaprevioo.jdbi.transaction.Action;
 import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.StorageEngine;
-import com.lucaprevioo.jdbi.validator.ForeignKey;
-import com.lucaprevioo.jdbi.validator.Id;
 
-import java.lang.reflect.Field;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -23,15 +19,5 @@ public class UpdateAction<M extends Model, S extends StorageEngine<M>> implement
     }
 
     @Override
-    public void execute(S engine) {
-
-        var snapshot = engine.read();
-        for (var item : snapshot) if (predicate.test(item)) {
-
-            var updated = updater.apply(item);
-            if (!updated.validate(engine)) throw new RuntimeException("Validation failed for updated model: " + updated);
-        }
-
-        engine.update(predicate, updater);
-    }
+    public void execute(S engine) { engine.update(predicate, updater); }
 }

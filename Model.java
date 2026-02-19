@@ -1,6 +1,9 @@
 package com.lucaprevioo.jdbi;
 
+import com.lucaprevioo.jdbi.exception.FailedValidationException;
 import com.lucaprevioo.jdbi.validator.*;
+
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
 /// Marker interface for data models.
@@ -9,176 +12,74 @@ import java.lang.reflect.Field;
 /// They can have annotated fields to enforce multiple constraints on the data.
 public interface Model {
 
-    /// Helper method to find if a value already exists in the storage engine for a given field.
-    ///
-    /// This method is used to check for unique constraints by searching through the existing models in the storage engine
-    /// and comparing the value of the specified field with the provided value.
-    /// @param engine The storage engine to search through for existing models.
-    /// @param field The field to check for the unique value.
-    /// @param value The value to check for uniqueness.
-    /// @return {@code true} if the value is unique (i.e., not found in any existing model), {@code false} if the value
-    /// already exists in the storage engine for the specified field.
-    private <M extends Model, S extends StorageEngine<M>> boolean findValue(S engine, Field field, Object value) {
+    /// Check if the field value is unique in the storage engine.
+    /// @param field The field to check for uniqueness.
+    /// @param engine The storage engine to check against.
+    /// @return true if the field value is unique, false otherwise.
+    default <M extends Model, S extends StorageEngine<M>> boolean checkUniqueConstraints(Field field, S engine) {
 
-        return engine.read(m -> {
+        var data = engine.read(m -> {
 
             try {
 
-                var declaredField = m.getClass().getDeclaredField(field.getName());
-                declaredField.setAccessible(true);
-                return declaredField.get(m).equals(value);
-            } catch (NoSuchFieldException | IllegalAccessException e) { throw new RuntimeException(e); }
-        }).isEmpty();
+                field.setAccessible(true);
+                var value = field.get(m);
+                return value != null && value.equals(field.get(this));
+            } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
+        });
+        return data.isEmpty();
     }
 
-    /// Checks if the model satisfies all unique constraints defined by the {@code @Unique} annotation.
-    /// Inside the database, no two models can have the same value for a field marked with {@code @Unique}.
-    /// @param engine The storage engine to check against for existing models with the same unique field values.
-    /// @return {@code true} if the model satisfies all unique constraints, {@code false} otherwise.
-    default <M extends Model, S extends StorageEngine<M>> boolean checkUniqueConstraints(S engine, Field field) {
-
-        field.setAccessible(true);
-        try {
-
-            var value = field.get(this);
-            if (value != null) return findValue(engine, field, value);
-        } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
-        return false;
-    }
-
-    /// Checks if the model satisfies all not-null constraints defined by the {@code @NotNull} annotation.
-    ///
-    /// Fields annotated with {@code @NotNull} must have non-null values. This method checks if any of those fields are null.
-    /// @return {@code true} if the model satisfies all not-null constraints, {@code false} if any field marked with {@code @NotNull} is null.
+    /// Check if the field value is not null.
+    /// @param field The field to check for non-null constraint.
+    /// @return true if the field value is not null, false otherwise.
     default boolean checkNotNullConstraints(Field field) {
 
-        field.setAccessible(true);
-        try { return field.get(this) != null; }
-        catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
-    }
-
-    /// Checks if the model satisfies all range constraints defined by the {@code @Range} annotation.
-    /// Fields annotated with {@code @Range} must have values within the specified range. This method checks if any
-    /// of those fields are out of range.
-    /// @return {@code true} if the model satisfies all range constraints, {@code false} if any field marked with
-    /// {@code @Range} is out of range.
-    default boolean checkRangeConstraints(Field field) {
-
-        field.setAccessible(true);
         try {
 
-            var value = field.get(this);
-            if (!(value instanceof Number n)) throw new RuntimeException("Field " + field.getName() + " is not a numeric type.");
-
-            var range = field.getAnnotation(Range.class);
-            var numValue = n.doubleValue();
-            return !(numValue < range.min() || numValue > range.max());
+            field.setAccessible(true);
+            return field.get(this) != null;
         } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
     }
 
-    /// Checks if the model satisfies all size constraints defined by the {@code @Size} annotation.
-    ///
-    /// Fields annotated with {@code @Size} must have values that do not exceed the specified maximum size.
-    /// This method checks if any of those fields are out of size constraints.
-    /// @return {@code true} if the model satisfies all size constraints, {@code false} if any field marked with {@code @Size} is out of size constraints.
+    /// Check if the field value satisfies both unique and non-null constraints.
+    /// @param field The field to check for ID constraints.
+    /// @param engine The storage engine to check against for uniqueness.
+    /// @return true if the field value satisfies both constraints, false otherwise.
+    default <M extends Model, S extends StorageEngine<M>> boolean checkIdConstraints(Field field, S engine) {
+        return checkUniqueConstraints(field, engine) && checkNotNullConstraints(field);
+    }
+
+        /// Check if the field value satisfies size constraints defined by the @Size annotation.
+        /// @param field The field to check for size constraints.
+        /// @return true if the field value satisfies the size constraints, false otherwise.
     default boolean checkSizeConstraints(Field field) {
 
-        field.setAccessible(true);
         try {
 
+            field.setAccessible(true);
             var value = field.get(this);
-            var size = field.getAnnotation(Size.class);
-            if (value instanceof String s) return !(s.length() < size.min() || s.length() > size.max());
-            else if (value instanceof Object[] arr) return !(arr.length < size.min() || arr.length > size.max());
-            else throw new RuntimeException("Field " + field.getName() + " is not a string or array type.");
+            var sizeAnnotation = field.getAnnotation(Size.class);
+            if (!(value instanceof String || value instanceof Array)) throw new FailedValidationException("Type mismatch for size constraint on field: " + field.getName());
+
+            if (value instanceof String s) return s.length() >= sizeAnnotation.min() && s.length() <= sizeAnnotation.max();
+            return Array.getLength(value) >= sizeAnnotation.min() && Array.getLength(value) <= sizeAnnotation.max();
+
         } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
     }
 
-    /// Checks if the model satisfies all allowed values constraints defined by the {@code @AllowedValues} annotation.
-    ///
-    /// Fields annotated with {@code @AllowedValues} must have values that are defined in the specified enum provider.
-    /// This method checks if any of those fields have values that are not in the allowed values provided by the enum provider.
-    /// @return {@code true} if the model satisfies all allowed values constraints, {@code false} if any field marked
-    /// with {@code @AllowedValues} has a value that is not in the allowed values provided by the enum provider.
-    default boolean checkAllowedValuesConstraints(Field field) {
-
-        field.setAccessible(true);
-        try {
-
-            var value = field.get(this);
-            var enumValues = field.getAnnotation(AllowedValues.class).provider().getEnumConstants();
-
-            var fieldType = field.getType();
-            var enumType = enumValues.getClass().getComponentType();
-            if (!fieldType.equals(enumType)) return false;
-            for (var enumValue : enumValues)
-                if (enumValue.equals(value)) return true;
-            return false;
-        } catch (Exception e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
-    }
-
-    /// Checks if the model satisfies all foreign key constraints defined by the {@code @ForeignKey} annotation.
-    ///
-    /// Fields annotated with {@code @ForeignKey} must reference a valid model instance of the specified target model class.
-    /// This method checks if any of those fields reference a non-existing model instance or if there is a type mismatch
-    /// between the foreign key field and the target model's ID field.
-    /// @param field The field to check for foreign key constraints.
-    /// @return {@code true} if the model satisfies all foreign key constraints, {@code false} if there is a type
-    /// mismatch between the foreign key field and the target model's ID field.
-    private <M extends Model, S extends StorageEngine<M>> boolean checkForeignKeyConstraints(S engine, Field field) {
-
-        var targetModelClass = field.getAnnotation(ForeignKey.class).targetModel();
-        var targetIdField = getIdField(targetModelClass);
-        if (targetIdField == null) throw new RuntimeException("Target model " + targetModelClass.getName() + " does not have an ID field");
-        if (!field.getType().equals(targetIdField.getType())) return false;
-
-        field.setAccessible(true);
-        try {
-
-            var targetIdValue = field.get(this);
-            if (targetIdValue == null) return false;
-            return findValue(engine, targetIdField, targetIdValue);
-        } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
-    }
-
-    /// Retrieves the field annotated with {@code @Id} from the specified target model class.
-    ///
-    /// This method iterates through the declared fields of the target model class and returns the field that is annotated
-    /// with {@code @Id}. If no such field is found, it returns {@code null}.
-    /// @param targetModel The target model class to search for the ID field.
-    /// @return The field annotated with {@code @Id} from the specified target model class, or {@code null} if no such field is found.
-    private <T extends Model> Field getIdField(Class<T> targetModel) {
-
-        Field foundField = null;
-        for (var field : targetModel.getDeclaredFields()) if (field.isAnnotationPresent(Id.class)) {
-
-            if (foundField != null) throw new RuntimeException("ID constraint violated for model: " + targetModel);
-            foundField = field;
-        }
-        return foundField;
-    }
-
-    /// Validates the model against all defined constraints.
-    /// This method checks if the model satisfies all constraints defined by the annotations on its fields.
-    /// @param engine The storage engine to check against for unique constraints and consistency with other constraints.
-    /// @return {@code true} if the model satisfies all constraints
-    default <M extends Model, S extends StorageEngine<M>> boolean validate(S engine) {
+    default <M extends Model, S extends StorageEngine<M>> void validate(S engine) throws FailedValidationException {
 
         for (var field : this.getClass().getDeclaredFields()) {
 
-            if ((field.isAnnotationPresent(Unique.class) || field.isAnnotationPresent(Id.class)) && !checkUniqueConstraints(engine, field))
-                throw new RuntimeException("Unique constraint violated for model: " + this);
-            if ((field.isAnnotationPresent(NotNull.class) || field.isAnnotationPresent(Id.class)) && !checkNotNullConstraints(field))
-                throw new RuntimeException("Not-null constraint violated for model: " + this);
-            if (field.isAnnotationPresent(Range.class) && !checkRangeConstraints(field))
-                throw new RuntimeException("Range constraint violated for model: " + this);
-            if (field.isAnnotationPresent(Size.class) && !checkSizeConstraints(field))
-                throw new RuntimeException("Size constraint violated for model: " + this);
-            if (field.isAnnotationPresent(AllowedValues.class) && !checkAllowedValuesConstraints(field))
-                throw new RuntimeException("Allowed values constraint violated for model: " + this);
-            if (field.isAnnotationPresent(ForeignKey.class) && !checkForeignKeyConstraints(engine, field))
-                throw new RuntimeException("Foreign key constraint violated for model: " + this);
+            if (field.getAnnotation(Unique.class) != null && !checkUniqueConstraints(field, engine))
+                throw new FailedValidationException("Unique constraint violation on field: " + field.getName());
+            if (field.getAnnotation(NotNull.class) != null && !checkNotNullConstraints(field))
+                throw new FailedValidationException("Non-null constraint violation on field: " + field.getName());
+            if (field.getAnnotation(Id.class) != null && !checkIdConstraints(field, engine))
+                throw new FailedValidationException("ID constraint violation on field: " + field.getName());
+            if (field.getAnnotation(Size.class) != null && !checkSizeConstraints(field))
+                throw new FailedValidationException("Size constraint violation on field: " + field.getName());
         }
-        return true;
     }
 }
