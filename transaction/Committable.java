@@ -18,10 +18,14 @@ public interface Committable {
     void rollback();
 
     /// Execute the transaction, applying all pending actions.
+    /// @param registry The EngineRegistry to be used for executing the transaction, providing access to the necessary
+    /// storage engines.
     void execute(EngineRegistry registry);
 
     /// Commits multiple transactions atomically. If any transaction fails, all transactions are rolled back.
     /// @param transactions An array of committable transactions to be executed together.
+    /// @param registry The EngineRegistry to be used for executing the transactions, providing access to the necessary
+    /// storage engines.
     static void commit(List<? extends Committable> transactions, EngineRegistry registry) {
 
         try {
@@ -37,6 +41,8 @@ public interface Committable {
     }
 
     /// Commits this transaction. If the commit fails, it rolls back to the previous state.
+    /// @param registry The EngineRegistry to be used for executing the transaction, providing access to the necessary
+    /// storage engines.
     default void commit(EngineRegistry registry) {
 
         try {

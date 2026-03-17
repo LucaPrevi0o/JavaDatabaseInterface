@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 /// providing a suitable Serializer instance to the constructor: the storge engine
 /// itself is agnostic to the actual format used.
 /// @param <M> The type of model being stored.
+/// @deprecated
+@Deprecated
 public class FileStorageEngine<M extends Model> extends StorageEngine<M> {
 
     protected final Serializer<M> serializer;

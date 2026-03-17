@@ -16,6 +16,8 @@ public abstract class StorageEngine<M extends Model> {
 
     public StorageEngine(Class<M> modelClass) { this.modelClass = modelClass; }
 
+    /// Gets the class of the model managed by this storage engine.
+    /// @return The class of the model managed by this storage engine.
     public Class<M> getModelClass() { return modelClass; }
 
     /// Create a single model in the storage.
