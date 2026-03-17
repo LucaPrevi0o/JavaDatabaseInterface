@@ -19,5 +19,5 @@ public class UpdateAction<M extends Model, S extends StorageEngine<M>> implement
     }
 
     @Override
-    public void execute(S engine) { engine.update(predicate, updater); }
+    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(S engine, FKS foreignKeyEngine) { engine.update(predicate, updater); }
 }

@@ -1,5 +1,7 @@
 package com.lucaprevioo.jdbi.transaction;
 
+import com.lucaprevioo.jdbi.Model;
+import com.lucaprevioo.jdbi.StorageEngine;
 import com.lucaprevioo.jdbi.exception.FailedRollbackException;
 import com.lucaprevioo.jdbi.exception.FailedTransactionException;
 
@@ -15,36 +17,36 @@ public interface Committable {
     void rollback();
 
     /// Execute the transaction, applying all pending actions.
-    void execute();
+    <FK extends Model, FKS extends StorageEngine<FK>> void execute(FKS foreignKeyEngine);
 
     /// Commits multiple transactions atomically. If any transaction fails, all transactions are rolled back.
     /// @param transactions An array of committable transactions to be executed together.
-    static void commit(List<? extends Committable> transactions) {
+    static <FK extends Model, FKS extends StorageEngine<FK>>  void commit(List<? extends Committable> transactions, FKS foreignKeyEngine) {
 
         try {
 
             for (var t : transactions) t.snapshot();
-            for (var t : transactions) t.execute();
+            for (var t : transactions) t.execute(foreignKeyEngine);
         } catch (Exception e) {
 
             for (var t : transactions) try { t.rollback(); }
             catch (Exception re) { e.addSuppressed(new FailedRollbackException("Rollback failed", re)); }
-            throw new FailedTransactionException("Rolled back due to transaction failure: " + e.getCause(), e);
+            throw new FailedTransactionException("Rolled back due to transaction failure", e);
         }
     }
 
     /// Commits this transaction. If the commit fails, it rolls back to the previous state.
-    default void commit() {
+    default <FK extends Model, FKS extends StorageEngine<FK>>  void commit(FKS foreignKeyEngine) {
 
         try {
 
             snapshot();
-            execute();
+            execute(foreignKeyEngine);
         } catch (Exception e) {
 
             try { rollback(); }
             catch (Exception re) { e.addSuppressed(new FailedRollbackException("Rollback failed", re)); }
-            throw new FailedTransactionException("Rolled back due to transaction failure: " + e.getCause(), e);
+            throw new FailedTransactionException("Rolled back due to transaction failure", e);
         }
     }
 }

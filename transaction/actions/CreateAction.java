@@ -11,9 +11,9 @@ public class CreateAction<M extends Model, S extends StorageEngine<M>> implement
     public CreateAction(M model) { this.model = model; }
 
     @Override
-    public void execute(S engine) {
+    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(S engine, FKS foreignKeyEngine) {
 
-        model.validate(engine);
+        model.validate(engine, foreignKeyEngine);
         engine.create(model);
     }
 }

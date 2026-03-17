@@ -13,5 +13,5 @@ public class DeleteAction<M extends Model, S extends StorageEngine<M>> implement
     public DeleteAction(Predicate<M> predicate) { this.predicate = predicate; }
 
     @Override
-    public void execute(S engine) { engine.delete(predicate); }
+    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(S engine, FKS foreignKeyEngine) { engine.delete(predicate); }
 }

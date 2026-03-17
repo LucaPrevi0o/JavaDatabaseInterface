@@ -30,7 +30,7 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> implements
     public void snapshot() { snapshot = engine.read();}
 
     @Override
-    public void execute() { for (var action : actions) action.execute(engine); }
+    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(FKS foreignKeyEngine) { for (var action : actions) action.execute(engine, foreignKeyEngine); }
 
     @Override
     public void rollback() {

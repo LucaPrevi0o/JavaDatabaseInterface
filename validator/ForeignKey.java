@@ -1,7 +1,5 @@
 package com.lucaprevioo.jdbi.validator;
 
-import com.lucaprevioo.jdbi.Model;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,14 +29,6 @@ public @interface ForeignKey {
     /// - {@code SET_NULL}: When a referenced model instance is updated or deleted, all model instances that reference
     /// it will have their foreign key field set to null.
     enum Action { CASCADE, RESTRICT, SET_NULL }
-
-    /// The target model class that the annotated field references. This class must implement the {@code Model} interface.
-    /// The storage engine will use this information to enforce referential integrity when creating or updating models.
-    ///
-    /// The target model should have a field annotated with {@code @Id} that serves as the primary identifier for
-    /// the model. The value of the annotated field must match the value of the primary identifier field in an existing
-    /// instance of the target model for the foreign key constraint to be satisfied.
-    Class<? extends Model> targetModel();
 
     /// The action to take when a referenced model instance is updated or deleted. This parameter specifies how the
     /// storage engine should handle the deletion of a model instance that is referenced by a foreign key.
