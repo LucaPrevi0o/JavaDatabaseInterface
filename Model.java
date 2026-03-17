@@ -1,5 +1,6 @@
 package com.lucaprevioo.jdbi;
 
+import com.lucaprevioo.jdbi.engine.EngineRegistry;
 import com.lucaprevioo.jdbi.exception.FailedValidationException;
 import com.lucaprevioo.jdbi.validator.*;
 
@@ -115,19 +116,10 @@ public interface Model {
     /// This method checks if the value of the foreign key field exists in the target storage engine.
     /// It retrieves the target model's ID field and compares it against the values in the target engine to ensure
     /// referential integrity.
-    ///
-    /// <hr>
-    ///
-    /// This method currently holds only **one** foreign key constraint per model, as it assumes that the field
-    /// annotated with {@code @ForeignKey} references a single target model.
-    /// If multiple foreign key fields are needed, additional logic would be required to handle multiple constraints
-    /// and their respective target models.
     /// @param field The field to check for foreign key constraints.
-    /// @param targetEngine The storage engine to check against for the existence of the referenced model instance.
-    /// @return {@code true} if the field value satisfies the foreign key constraints, {@code false} otherwise.
-    /// @param <FK> The type of the foreign key model.
-    /// @param <FKS> The type of the storage engine for the foreign key model
-    default <FK extends Model, FKS extends StorageEngine<FK>> boolean checkForeignKeyConstraints(Field field, FKS targetEngine) {
+    /// @param registry The engine registry to access the target storage engine.
+    /// @return {@code true} if the field value satisfies foreign key constraints, {@code false} otherwise.
+    default boolean checkForeignKeyConstraints(Field field, EngineRegistry registry) {
 
         try {
 
@@ -137,6 +129,7 @@ public interface Model {
             var targetIdField = getIdField(type);
             if (targetIdField == null) throw new FailedValidationException("Foreign key target model must have an ID field: " + field.getName());
 
+            var targetEngine = registry.get(type);
             return !targetEngine.read(m -> {
 
                 try {
@@ -150,7 +143,17 @@ public interface Model {
         } catch (IllegalAccessException e) { throw new RuntimeException("Failed to access field: " + field.getName(), e); }
     }
 
-    default <M extends Model, FK extends Model, S extends StorageEngine<M>, FKS extends StorageEngine<FK>> void validate(S engine, FKS foreignKeyEngine) throws FailedValidationException {
+    /// Validate the model instance against all defined constraints on its fields.
+    /// This method iterates through all declared fields of the model class and checks for various constraints based on
+    /// the annotations present on each field. If any constraint is violated, a {@code FailedValidationException} is
+    /// thrown with a descriptive message.
+    /// @param engine The storage engine to check against for constraints that require access to existing data (e.g.,
+    /// unique constraints).
+    /// @param registry The engine registry to access other storage engines for constraints that involve relationship
+    /// (e.g., foreign key constraints).
+    /// @throws FailedValidationException if any constraint is violated, with a message indicating the specific field
+    /// and type of violation.
+    default <M extends Model, S extends StorageEngine<M>> void validate(S engine, EngineRegistry registry) throws FailedValidationException {
 
         for (var field : this.getClass().getDeclaredFields()) {
 
@@ -166,7 +169,7 @@ public interface Model {
                 throw new FailedValidationException("Range constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
             if (field.getAnnotation(AllowedValues.class) != null && !checkAllowedValuesConstraints(field))
                 throw new FailedValidationException("Allowed values constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
-            if (field.getAnnotation(ForeignKey.class) != null && !checkForeignKeyConstraints(field, foreignKeyEngine))
+            if (field.getAnnotation(ForeignKey.class) != null && !checkForeignKeyConstraints(field, registry))
                 throw new FailedValidationException("Foreign key constraint violation on field: " + this.getClass().getSimpleName() + "." + field.getName());
         }
     }

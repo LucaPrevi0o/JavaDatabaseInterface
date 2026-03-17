@@ -17,7 +17,7 @@ public class JsonStorageEngine<M extends Model> extends FileStorageEngine<M> {
     /// Constructs a JsonStorageEngine with the specified file path and JSON serializer.
     /// @param path The file path where models will be stored.
     /// @param serializer The JsonSerializer used for serializing and deserializing models.
-    public JsonStorageEngine(String path, JsonSerializer<M> serializer) { super(path, serializer); }
+    public JsonStorageEngine(Class<M> modelClass, String path, JsonSerializer<M> serializer) { super(modelClass, path, serializer); }
 
     @Override
     public synchronized void create(M model) {

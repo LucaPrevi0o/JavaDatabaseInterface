@@ -1,5 +1,6 @@
 package com.lucaprevioo.jdbi;
 
+import com.lucaprevioo.jdbi.engine.EngineRegistry;
 import com.lucaprevioo.jdbi.transaction.Transaction;
 import com.lucaprevioo.jdbi.transaction.TransactionBuilder;
 
@@ -10,6 +11,10 @@ import java.util.function.Consumer;
 /// to be performed within the transaction context.
 public class Database {
 
+    EngineRegistry registry = new EngineRegistry();
+
+    public EngineRegistry getRegistry() { return registry; }
+
     /// Begin a transaction for the specified model type, executing the provided actions.
     ///
     /// @param <M>     The type of model for which to begin the transaction.
@@ -19,6 +24,7 @@ public class Database {
     /// @return A Transaction object representing the transaction context.
     public <M extends Model, S extends StorageEngine<M>> Transaction<M, S> begin(S engine, Consumer<TransactionBuilder<M, S>> actions) {
 
+        registry.register(engine.getModelClass(), engine);
         var builder = new TransactionBuilder<M, S>();
         actions.accept(builder);
         return new Transaction<>(engine, builder.build());

@@ -2,6 +2,7 @@ package com.lucaprevioo.jdbi.transaction;
 
 import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.StorageEngine;
+import com.lucaprevioo.jdbi.engine.EngineRegistry;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> implements
     public void snapshot() { snapshot = engine.read();}
 
     @Override
-    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(FKS foreignKeyEngine) { for (var action : actions) action.execute(engine, foreignKeyEngine); }
+    public void execute(EngineRegistry registry) { for (var action : actions) action.execute(engine, registry); }
 
     @Override
     public void rollback() {

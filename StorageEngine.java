@@ -12,6 +12,12 @@ import java.util.function.Predicate;
 /// @param <M> The type of model managed by the storage engine.
 public abstract class StorageEngine<M extends Model> {
 
+    Class<M> modelClass;
+
+    public StorageEngine(Class<M> modelClass) { this.modelClass = modelClass; }
+
+    public Class<M> getModelClass() { return modelClass; }
+
     /// Create a single model in the storage.
     /// @param model The model to create in the storage.
     public abstract void create(M model);

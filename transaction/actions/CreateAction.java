@@ -1,5 +1,6 @@
 package com.lucaprevioo.jdbi.transaction.actions;
 
+import com.lucaprevioo.jdbi.engine.EngineRegistry;
 import com.lucaprevioo.jdbi.transaction.Action;
 import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.StorageEngine;
@@ -11,9 +12,9 @@ public class CreateAction<M extends Model, S extends StorageEngine<M>> implement
     public CreateAction(M model) { this.model = model; }
 
     @Override
-    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(S engine, FKS foreignKeyEngine) {
+    public void execute(S engine, EngineRegistry registry) {
 
-        model.validate(engine, foreignKeyEngine);
+        model.validate(engine, registry);
         engine.create(model);
     }
 }

@@ -1,5 +1,6 @@
 package com.lucaprevioo.jdbi.transaction.actions;
 
+import com.lucaprevioo.jdbi.engine.EngineRegistry;
 import com.lucaprevioo.jdbi.transaction.Action;
 import com.lucaprevioo.jdbi.Model;
 import com.lucaprevioo.jdbi.StorageEngine;
@@ -19,5 +20,5 @@ public class UpdateAction<M extends Model, S extends StorageEngine<M>> implement
     }
 
     @Override
-    public <FK extends Model, FKS extends StorageEngine<FK>> void execute(S engine, FKS foreignKeyEngine) { engine.update(predicate, updater); }
+    public void execute(S engine, EngineRegistry registry) { engine.update(predicate, updater); }
 }

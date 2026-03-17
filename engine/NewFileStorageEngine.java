@@ -12,24 +12,9 @@ public class NewFileStorageEngine<M extends Model> extends StorageEngine<M> {
     private final Serializer<M> serializer;
     private final String filePath;
 
-    // i need a file to store the data
-    // create operation does an append to the file
-    // read operation reads the whole file and deserializes it into a list of models
-    // update operation does this:
-    // - reads the whole file
-    // - deserializes every line
-    // - for every deserialized object, checks if it is equal to the provided model
-    // - if it is, it replaces it with the updated model, then it writes everything back to the file
-    // - if it is not, just writes back the line
-    // delete operation does this:
-    // - reads the whole file
-    // - deserializes every line
-    // - for every deserialized object, checks if it is equal to the provided model
-    // - if it is, it skips it
-    // - if it is not, just writes back the line
+    public NewFileStorageEngine(Class<M> modelClass, Serializer<M> serializer, String filePath) {
 
-    public NewFileStorageEngine(Serializer<M> serializer, String filePath) {
-
+        super(modelClass);
         this.serializer = serializer;
         this.filePath = filePath;
 
