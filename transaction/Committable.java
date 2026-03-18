@@ -1,7 +1,5 @@
 package com.lucaprevioo.jdbi.transaction;
 
-import com.lucaprevioo.jdbi.Model;
-import com.lucaprevioo.jdbi.StorageEngine;
 import com.lucaprevioo.jdbi.engine.EngineRegistry;
 import com.lucaprevioo.jdbi.exception.FailedRollbackException;
 import com.lucaprevioo.jdbi.exception.FailedTransactionException;
@@ -20,18 +18,18 @@ public interface Committable {
     /// Execute the transaction, applying all pending actions.
     /// @param registry The EngineRegistry to be used for executing the transaction, providing access to the necessary
     /// storage engines.
-    void execute(EngineRegistry registry);
+    void execute();
 
     /// Commits multiple transactions atomically. If any transaction fails, all transactions are rolled back.
     /// @param transactions An array of committable transactions to be executed together.
     /// @param registry The EngineRegistry to be used for executing the transactions, providing access to the necessary
     /// storage engines.
-    static void commit(List<? extends Committable> transactions, EngineRegistry registry) {
+    static void commit(List<? extends Committable> transactions) {
 
         try {
 
             for (var t : transactions) t.snapshot();
-            for (var t : transactions) t.execute(registry);
+            for (var t : transactions) t.execute();
         } catch (Exception e) {
 
             for (var t : transactions) try { t.rollback(); }
@@ -43,12 +41,12 @@ public interface Committable {
     /// Commits this transaction. If the commit fails, it rolls back to the previous state.
     /// @param registry The EngineRegistry to be used for executing the transaction, providing access to the necessary
     /// storage engines.
-    default void commit(EngineRegistry registry) {
+    default void commit() {
 
         try {
 
             snapshot();
-            execute(registry);
+            execute();
         } catch (Exception e) {
 
             try { rollback(); }

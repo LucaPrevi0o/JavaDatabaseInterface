@@ -17,21 +17,23 @@ public class Transaction<M extends Model, S extends StorageEngine<M>> implements
     private final S engine;
     private final List<Action<M, S>> actions;
     private List<M> snapshot = null;
+    private final EngineRegistry registry;
 
     /// Constructs a Transaction with the specified storage engine and actions.
     /// @param engine  The storage engine instance for the transaction.
     /// @param actions A consumer that defines the actions to be performed within the transaction.
-    public Transaction(S engine, List<Action<M, S>> actions) {
+    public Transaction(S engine, List<Action<M, S>> actions, EngineRegistry registry) {
 
         this.engine = engine;
         this.actions = actions;
+        this.registry = registry;
     }
 
     @Override
     public void snapshot() { snapshot = engine.read();}
 
     @Override
-    public void execute(EngineRegistry registry) { for (var action : actions) action.execute(engine, registry); }
+    public void execute() { for (var action : actions) action.execute(engine, registry); }
 
     @Override
     public void rollback() {

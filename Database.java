@@ -30,6 +30,6 @@ public class Database {
         registry.register(engine.getModelClass(), engine);
         var builder = new TransactionBuilder<M, S>();
         actions.accept(builder);
-        return new Transaction<>(engine, builder.build());
+        return new Transaction<>(engine, builder.build(), registry);
     }
 }
