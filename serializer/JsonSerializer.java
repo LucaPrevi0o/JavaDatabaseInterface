@@ -50,7 +50,7 @@ public interface JsonSerializer<M extends Model> extends Serializer<M> {
     /// @param jsonBuilder The StringBuilder to append to.
     /// @param name The name of the field.
     /// @param value The value of the field.
-    default void appendField(StringBuilder jsonBuilder, String name, Object value) {
+    private static void appendField(StringBuilder jsonBuilder, String name, Object value) {
 
         jsonBuilder.append("\"").append(name).append("\":");
         appendField(jsonBuilder, value);
@@ -59,7 +59,7 @@ public interface JsonSerializer<M extends Model> extends Serializer<M> {
     /// Append a value to the JSON string builder.
     /// @param jsonBuilder The StringBuilder to append to.
     /// @param value The value to append.
-    default void appendField(StringBuilder jsonBuilder, Object value) {
+    private static void appendField(StringBuilder jsonBuilder, Object value) {
 
         if (value == null) jsonBuilder.append("null");
         else if (value instanceof String || value instanceof Character) {
@@ -84,7 +84,7 @@ public interface JsonSerializer<M extends Model> extends Serializer<M> {
     /// Escape special characters in a JSON string.
     /// @param s The input string to escape.
     /// @return The escaped JSON string.
-    static String escapeJsonString(String s) {
+    private static String escapeJsonString(String s) {
 
         if (s == null || s.isEmpty()) return s == null ? "" : s;
         return s.replace("\\", "\\\\")
