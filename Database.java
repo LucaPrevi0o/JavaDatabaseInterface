@@ -11,13 +11,7 @@ import java.util.function.Consumer;
 /// to be performed within the transaction context.
 public class Database {
 
-    EngineRegistry registry = new EngineRegistry();
-
-    /// Retrieves the engine registry associated with this database instance. The engine registry is responsible for
-    /// managing the storage engines for different model types, allowing for dynamic retrieval and registration of
-    /// storage engines as needed during transactions.
-    /// @return The EngineRegistry instance associated with this database.
-    public EngineRegistry getRegistry() { return registry; }
+    private final EngineRegistry registry = new EngineRegistry();
 
     /// Begin a transaction for the specified model type, executing the provided actions.
     /// @param <M> The type of model for which to begin the transaction.
