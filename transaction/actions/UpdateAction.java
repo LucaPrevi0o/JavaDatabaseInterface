@@ -26,5 +26,13 @@ public class UpdateAction<M extends Model, S extends StorageEngine<M>> implement
     }
 
     @Override
-    public void execute(S engine, EngineRegistry registry) { engine.update(predicate, updater); }
+    public void execute(S engine, EngineRegistry registry) {
+
+        engine.update(predicate, model -> {
+
+            var updated = updater.apply(model);
+            updated.validate(engine, registry);
+            return updated;
+        });
+    }
 }
