@@ -6,6 +6,8 @@ import com.lucaprevioo.jdbi.StorageEngine;
 
 import java.io.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NewFileStorageEngine<M extends Model> extends StorageEngine<M> {
     
@@ -19,8 +21,12 @@ public class NewFileStorageEngine<M extends Model> extends StorageEngine<M> {
         this.filePath = filePath;
 
         var file = new File(filePath);
-        try { if (file.createNewFile()) System.out.println("File created: " + filePath); }
-        catch (IOException e) { throw new RuntimeException("Failed to create file for storage engine: " + e.getMessage(), e); }
+        try {
+
+            var logger = Logger.getLogger(NewFileStorageEngine.class.getName());
+            if (file.createNewFile()) logger.log(Level.INFO, "Created new storage file: " + filePath);
+            else logger.log(Level.INFO, "Storage engine linked to existing file: " + filePath);
+        } catch (IOException e) { throw new RuntimeException("Failed to create file for storage engine: " + e.getMessage(), e); }
     }
 
     @Override

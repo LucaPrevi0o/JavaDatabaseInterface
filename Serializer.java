@@ -12,6 +12,9 @@ package com.lucaprevioo.jdbi;
 /// The serializer is designed to work with any model implementing the Model interface.
 /// This allows for flexibility in handling different types of data models,
 /// in order for the storage engines to utilize the same serialization logic.
+/// @param <M> The type of model being serialized and deserialized.
+/// @see Model
+/// @see StorageEngine
 public interface Serializer<M extends Model> {
 
     /// Serialize the model into a storable line.
